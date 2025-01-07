@@ -35,10 +35,8 @@ export const TransactionContext = createContext<TransactionContextType>(
   {} as TransactionContextType
 );
 
-const { ethereum } = window!;
-
 const createEthereumContract = async () => {
-  const provider = new ethers.BrowserProvider(ethereum);
+  const provider = new ethers.BrowserProvider(window.ethereum);
   const signer = await provider.getSigner();
   const transactionsContract = new ethers.Contract(
     contractAddress,
@@ -60,9 +58,10 @@ export const TransactionsProvider = ({
     keyword: "",
     message: "",
   });
+
   const [currentAccount, setCurrentAccount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [transactionCount, setTransactionCount] = useState(localStorage.getItem("transactionCount") == null ? 0 : parseInt(localStorage.getItem("transactionCount")!));
+  const [transactionCount, setTransactionCount] = useState(0);
   const [transactions, setTransactions] = useState<transactionsProps[] | undefined>();
 
   const handleChange = (
@@ -74,7 +73,7 @@ export const TransactionsProvider = ({
 
   const getAllTransactions = async () => {
     try {
-      if (ethereum) {
+      if (window.ethereum) {
         const transactionsContract = await createEthereumContract();
 
         const availableTransactions =
@@ -111,9 +110,9 @@ export const TransactionsProvider = ({
 
   const checkIfWalletIsConnect = async () => {
     try {
-      if (!ethereum) return alert("Please install MetaMask.");
+      if (!window.ethereum) return alert("Please install MetaMask.");
 
-      const accounts = await ethereum.request({ method: "eth_accounts" });
+      const accounts = await window.ethereum.request({ method: "eth_accounts" });
 
       if (accounts.length) {
         setCurrentAccount(accounts[0]);
@@ -130,12 +129,12 @@ export const TransactionsProvider = ({
 
   const checkIfTransactionsExists = async () => {
     try {
-      if (ethereum) {
+      if (window.ethereum) {
         const transactionsContract = await createEthereumContract();
         const currentTransactionCount =
           await transactionsContract.getTransactionCount();
 
-        window.localStorage.setItem(
+        localStorage.setItem(
           "transactionCount",
           currentTransactionCount
         );
@@ -149,9 +148,9 @@ export const TransactionsProvider = ({
 
   const connectWallet = async () => {
     try {
-      if (!ethereum) return alert("Please install MetaMask.");
+      if (!window.ethereum) return alert("Please install MetaMask.");
 
-      const accounts = await ethereum.request({
+      const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
 
@@ -166,12 +165,12 @@ export const TransactionsProvider = ({
 
   const sendTransaction = async () => {
     try {
-      if (ethereum) {
+      if (window.ethereum) {
         const { addressTo, amount, keyword, message } = formData;
         const transactionsContract = await createEthereumContract();
         const parsedAmount = ethers.parseEther(amount);
 
-        await ethereum.request({
+        await window.ethereum.request({
           method: "eth_sendTransaction",
           params: [
             {
