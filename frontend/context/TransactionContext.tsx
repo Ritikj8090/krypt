@@ -35,7 +35,7 @@ export const TransactionContext = createContext<TransactionContextType>(
   {} as TransactionContextType
 );
 
-const { ethereum } = window;
+const { ethereum } = window!;
 
 const createEthereumContract = async () => {
   const provider = new ethers.BrowserProvider(ethereum);
